@@ -1,20 +1,10 @@
-
-#Imports
 import copy
 import numpy as np
 import cv2
 import heapq as hq
 import time
 
-# def obstacle_space(canvas):
-
-#     cv2.fillPoly(canvas, pts = [np.array([[460,25], [510,125], [460,225], [460,25]])], color=(255,255,0)) 
-#     cv2.fillPoly(canvas, pts = [np.array([[235.04, 87.5], [235.05, 162.5], [300, 200], [364.95, 162.5], [364.95, 87.5], [300, 50], [235.04, 87.5]],np.int32)], color=(255,255,0)) #Hexagon
-#     cv2.fillPoly(canvas, pts = [np.array([[100,0],[100,100],[150,100],[150,0],[100,0]])], color =(255,255, 0)) 
-#     cv2.fillPoly(canvas, pts = [np.array([[100,150],[100,250],[150,250],[150,150],[100,150]])], color=(255,255,0))
-
-#     return canvas
-
+#Defining Actions 
 def MoveUp(curr_loc,canvas):
 
     location = copy.deepcopy(curr_loc)
@@ -94,6 +84,7 @@ def MoveUpLeft(curr_loc,canvas):
     else:
         return False,tuple(location)
 
+#Backtracking
 def Backtracking(start_point, goal_point, closed_list, canvas):
     out = cv2.VideoWriter('Succesful-Test-Case.avi', cv2.VideoWriter_fourcc(*'XVID'), 1000, (canvas.shape[1], canvas.shape[0]))
     path_stack = []
@@ -117,11 +108,27 @@ def Backtracking(start_point, goal_point, closed_list, canvas):
         cv2.imshow("Path Exploration", canvas)
     out.release() 
 
-canvas = np.ones((250,600,3),dtype="uint8") #Creating a blank canvas
-cv2.fillPoly(canvas, pts = [np.array([[460,25], [510,125], [460,225], [460,25]])], color=(255,255,0)) #Triangle
-cv2.fillPoly(canvas, pts = [np.array([[235.04, 87.5], [235.05, 162.5], [300, 200], [364.95, 162.5], [364.95, 87.5], [300, 50], [235.04, 87.5]],np.int32)], color=(255,255,0)) #Hexagon
-cv2.fillPoly(canvas, pts = [np.array([[100,0],[100,100],[150,100],[150,0],[100,0]])], color =(255,255, 0)) 
-cv2.fillPoly(canvas, pts = [np.array([[100,150],[100,250],[150,250],[150,150],[100,150]])], color=(255,255,0))
+#Creating a blank canvas and drawing obstacles
+canvas = np.ones((250,600,3),dtype="uint8") 
+#Triangle
+pts_t = [np.array([[460,25],[510,125], [460,225], [460,25]])]
+cv2.fillPoly(canvas , pts_t, color=(255,255,0)) 
+cv2.polylines(canvas,pts_t, True ,color=(0,0,255),thickness=5)
+
+#Hexagon
+pts_h = [np.array([[235.04, 87.5], [235.05, 162.5], [300, 200], [364.95, 162.5], [364.95, 87.5], [300, 50], [235.04, 87.5]],np.int32)]
+cv2.fillPoly(canvas, pts_h, color=(255,255,0))
+cv2.polylines(canvas,pts_h,True,color=(0,0,255),thickness=5)
+
+#Upper Rectangle
+pts_ur =[np.array([[100,0],[100,100],[150,100],[150,0],[100,0]])]
+cv2.fillPoly(canvas, pts_ur, color =(255,255, 0))
+cv2.polylines(canvas,pts_ur,True,color=(0,0,255),thickness=5) 
+
+#Lower rectangle
+pts_lr = [np.array([[100,150],[100,250],[150,250],[150,150],[100,150]])]
+cv2.fillPoly(canvas, pts_lr, color=(255,255,0))
+cv2.polylines(canvas,pts_lr,True,color=(0,0,255),thickness=5) 
 
 start_point = []
 goal_point = []
@@ -133,7 +140,7 @@ def get_point(point_type):
         if not (0 <= int(x) < canvas.shape[1] and 0 <= int(y) < canvas.shape[0]):
             print("Enter valid coordinates")
         elif canvas[canvas.shape[0] - int(y) - 1][int(x)][0] == 255:
-            print(f"The entered {point_type.lower()} curr_loc is in the obstacle space")
+            print(f"The entered {point_type.lower()} coordinate is in the obstacle space")
         else:
             return [int(x), int(y)]
 
@@ -143,7 +150,7 @@ goal_point = get_point("Goal")
 start_point[1] = canvas.shape[0]-1 - start_point[1]
 goal_point[1] = canvas.shape[0]-1 - goal_point[1]
 
-###################### Start Dijistra################################
+start_time = time.time()
 open_list = []
 closed_list = {}
 Backtracking_flag = False
@@ -178,9 +185,7 @@ if(Backtracking_flag):
 else:
     print("Solution Cannot Be Found")
 
-################ End Dijistra#######################
-start_time = time.time()
 end_time = time.time() 
 cv2.waitKey(0) 
 cv2.destroyAllWindows() 
-print("Code Execution Time: ",end_time-start_time) 
+print("Path Exploration Time: ",end_time-start_time) 
